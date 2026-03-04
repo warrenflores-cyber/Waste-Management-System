@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Waste Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .sidebar {
+            transition: width 0.3s ease-in-out;
+        }
+
+        .sidebar.collapsed {
+            width: 5rem;
+        }
+
+        .sidebar:not(.collapsed) {
+            width: 16rem;
+        }
+
+        .main-content {
+            margin-left: 16rem;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+        .main-content.expanded {
+            margin-left: 5rem;
+        }
+
+        .progress-bar {
+            transition: width 0.3s ease-in-out;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .toggle-switch.active {
+            background-color: #10b981;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(20px);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar fixed left-0 top-0 h-screen bg-white border-r border-gray-200 z-50">
+        <div class="flex flex-col h-full">
+            <!-- Header -->
+            <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+                <div id="sidebarHeader" class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-trash text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-semibold text-gray-900">Smart Waste</h1>
+                        <p class="text-xs text-gray-500">Management</p>
+                    </div>
+                </div>
+                <button id="toggleSidebar" class="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+                    <i id="toggleIcon" class="fas fa-chevron-left text-gray-600"></i>
+                </button>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 p-4 space-y-1">
+                <a href="#" data-page="dashboard" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 bg-emerald-50 text-emerald-700">
+                    <i class="fas fa-th-large w-5"></i>
+                    <span class="nav-label font-medium">Dashboard</span>
+                </a>
+                <a href="#" data-page="bin-status" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-gray-600 hover:bg-gray-50">
+                    <i class="fas fa-trash w-5"></i>
+                    <span class="nav-label font-medium">Bin Status</span>
+                </a>
+                <a href="#" data-page="collection-history" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-gray-600 hover:bg-gray-50">
+                    <i class="fas fa-history w-5"></i>
+                    <span class="nav-label font-medium">Collection History</span>
+                </a>
+                <a href="#" data-page="reports" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-gray-600 hover:bg-gray-50">
+                    <i class="fas fa-chart-bar w-5"></i>
+                    <span class="nav-label font-medium">Reports</span>
+                </a>
+                <a href="#" data-page="settings" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-gray-600 hover:bg-gray-50">
+                    <i class="fas fa-cog w-5"></i>
+                    <span class="nav-label font-medium">Settings</span>
+                </a>
+            </nav>
+
+            <!-- Logout -->
+            <div class="p-4 border-t border-gray-200">
+                <button class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors w-full">
+                    <i class="fas fa-sign-out-alt w-5"></i>
+                    <span class="nav-label font-medium">Logout</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="mainContent" class="main-content flex-1 transition-all duration-300">
+        <!-- Dashboard Page -->
+        <div id="dashboard" class="page active p-8">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+                <p class="text-gray-600">Welcome to Smart Waste Management System</p>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-blue-50 rounded-lg">
+                            <i class="fas fa-trash text-blue-600 text-2xl"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-gray-600 text-sm mb-1">Total Bins</h3>
+                    <p class="text-3xl font-bold text-gray-900">12</p>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-red-50 rounded-lg">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-gray-600 text-sm mb-1">Full Bins</h3>
+                    <p class="text-3xl font-bold text-gray-900">4</p>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-emerald-50 rounded-lg">
+                            <i class="fas fa-check-circle text-emerald-600 text-2xl"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-gray-600 text-sm mb-1">Collected Today</h3>
+                    <p class="text-3xl font-bold text-gray-900">2</p>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-purple-50 rounded-lg">
+                            <i class="fas fa-chart-line text-purple-600 text-2xl"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-gray-600 text-sm mb-1">Average Fill Level</h3>
+                    <p class="text-3xl font-bold text-gray-900">67%</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Fill Level Overview -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Fill Level Overview</h2>
+                    <div class="space-y-4" id="fillLevelOverview"></div>
+                </div>
+
+                <!-- Recent Alerts -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Recent Alerts (7)</h2>
+                    <div class="space-y-4" id="recentAlerts"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bin Status Page -->
+        <div id="bin-status" class="page p-8">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Bin Status</h1>
+                <p class="text-gray-600">Monitor all waste bins in real-time</p>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-6">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1 relative">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" id="binSearch" placeholder="Search by Bin ID or Location..." class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                    </div>
+                    <select id="statusFilter" class="px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                        <option value="all">All Status</option>
+                        <option value="Normal">Normal</option>
+                        <option value="Warning">Warning</option>
+                        <option value="Full">Full</option>
+                    </select>
+                    <button class="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="bg-gray-50 border-b border-gray-200">
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Bin ID</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Location</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Fill Level</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Status</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody id="binTableBody" class="divide-y divide-gray-200"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="mt-4 text-sm text-gray-600" id="binCount"></div>
+        </div>
+
+        <!-- Collection History Page -->
+        <div id="collection-history" class="page p-8">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Collection History</h1>
+                <p class="text-gray-600">View all waste collection records</p>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-6">
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="flex-1 relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" id="historySearch" placeholder="Search by Bin ID, Location, or Action..." class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                        </div>
+                        <button onclick="exportCSV()" class="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+                            <i class="fas fa-download"></i>
+                            Export CSV
+                        </button>
+                    </div>
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="flex-1 relative">
+                            <i class="fas fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                            <input type="date" id="startDate" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                        </div>
+                        <div class="flex-1 relative">
+                            <i class="fas fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                            <input type="date" id="endDate" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                        </div>
+                        <button id="clearDates" class="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors hidden">
+                            Clear Dates
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="bg-gray-50 border-b border-gray-200">
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Date</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Time</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Bin ID</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Location</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Action Taken</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody" class="divide-y divide-gray-200"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="mt-4 text-sm text-gray-600" id="historyCount"></div>
+        </div>
+
+        <!-- Reports Page -->
+        <div id="reports" class="page p-8">
+            <div class="mb-8 flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Reports</h1>
+                    <p class="text-gray-600">Analytics and insights for waste management</p>
+                </div>
+                <button onclick="exportReportCSV()" class="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+                    <i class="fas fa-download"></i>
+                    Export Data
+                </button>
+            </div>
+
+            <!-- Fill Trends Chart -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-6">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="p-2 bg-blue-50 rounded-lg">
+                        <i class="fas fa-chart-line text-blue-600"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-900">Fill Level Trends</h2>
+                        <p class="text-sm text-gray-600">Average and maximum fill levels over time</p>
+                    </div>
+                </div>
+                <canvas id="fillTrendChart" style="max-height: 320px;"></canvas>
+            </div>
+
+            <!-- Frequency Chart -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-6">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="p-2 bg-purple-50 rounded-lg">
+                        <i class="fas fa-chart-bar text-purple-600"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-900">Most Frequently Filled Bins</h2>
+                        <p class="text-sm text-gray-600">Top 5 bins requiring most frequent collection</p>
+                    </div>
+                </div>
+                <canvas id="frequencyChart" style="max-height: 320px;"></canvas>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <h3 class="text-sm text-gray-600 mb-2">Most Active Bin</h3>
+                    <p class="text-2xl font-bold text-gray-900 mb-1">BIN-003</p>
+                    <p class="text-sm text-gray-600">Library - Main Hall</p>
+                    <p class="text-xs text-emerald-600 mt-2">15 collections this month</p>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <h3 class="text-sm text-gray-600 mb-2">Average Collections</h3>
+                    <p class="text-2xl font-bold text-gray-900 mb-1">12</p>
+                    <p class="text-sm text-gray-600">Per bin this month</p>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <h3 class="text-sm text-gray-600 mb-2">Total Collections</h3>
+                    <p class="text-2xl font-bold text-gray-900 mb-1">62</p>
+                    <p class="text-sm text-gray-600">This month across all bins</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div id="settings" class="page p-8">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Settings</h1>
+                <p class="text-gray-600">Configure your Smart Waste Management System</p>
+            </div>
+
+            <div class="max-w-4xl space-y-6">
+                <!-- Alert Settings -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2 bg-red-50 rounded-lg">
+                            <i class="fas fa-bell text-red-600"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-semibold text-gray-900">Alert Settings</h2>
+                            <p class="text-sm text-gray-600">Configure notification preferences</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Alert Threshold (%)</label>
+                            <input type="number" id="alertThreshold" value="90" min="0" max="100" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                            <p class="text-xs text-gray-500 mt-1">Receive alerts when bins reach this fill level</p>
+                        </div>
+
+                        <div class="flex items-center justify-between py-3">
+                            <div>
+                                <p class="font-medium text-gray-900">Email Notifications</p>
+                                <p class="text-sm text-gray-600">Receive alerts via email</p>
+                            </div>
+                            <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                        </div>
+
+                        <div class="flex items-center justify-between py-3">
+                            <div>
+                                <p class="font-medium text-gray-900">Push Notifications</p>
+                                <p class="text-sm text-gray-600">Receive browser notifications</p>
+                            </div>
+                            <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Settings -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2 bg-blue-50 rounded-lg">
+                            <i class="fas fa-database text-blue-600"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-semibold text-gray-900">System Settings</h2>
+                            <p class="text-sm text-gray-600">Configure system behavior</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Data Refresh Interval (seconds)</label>
+                            <input type="number" id="refreshInterval" value="30" min="10" max="300" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                            <p class="text-xs text-gray-500 mt-1">How often to refresh data from sensors</p>
+                        </div>
+
+                        <div class="flex items-center justify-between py-3">
+                            <div>
+                                <p class="font-medium text-gray-900">Auto Refresh</p>
+                                <p class="text-sm text-gray-600">Automatically refresh data</p>
+                            </div>
+                            <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Connection Settings -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2 bg-purple-50 rounded-lg">
+                            <i class="fas fa-wifi text-purple-600"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-semibold text-gray-900">Connection Settings</h2>
+                            <p class="text-sm text-gray-600">Configure ESP32 and database connections</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">WiFi SSID</label>
+                            <input type="text" id="wifiSSID" value="SmartWaste_Network" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Database Host</label>
+                            <input type="text" id="databaseHost" value="localhost:5432" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Settings -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2 bg-emerald-50 rounded-lg">
+                            <i class="fas fa-envelope text-emerald-600"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-semibold text-gray-900">Contact Settings</h2>
+                            <p class="text-sm text-gray-600">Configure notification recipients</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Admin Email Address</label>
+                        <input type="email" id="emailAddress" value="admin@smartwaste.com" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                    </div>
+                </div>
+
+                <!-- Save Button -->
+                <div class="flex justify-end">
+                    <button onclick="saveSettings()" class="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium">
+                        <i class="fas fa-save"></i>
+                        Save Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Mock Data
+        const bins = [
+            { id: 'BIN-001', location: 'Engineering Building - Floor 1', fillLevel: 45, status: 'Normal', lastUpdated: new Date(2026, 2, 4, 10, 30) },
+            { id: 'BIN-002', location: 'Engineering Building - Floor 2', fillLevel: 78, status: 'Warning', lastUpdated: new Date(2026, 2, 4, 11, 15) },
+            { id: 'BIN-003', location: 'Library - Main Hall', fillLevel: 92, status: 'Full', lastUpdated: new Date(2026, 2, 4, 9, 45) },
+            { id: 'BIN-004', location: 'Cafeteria - North Wing', fillLevel: 67, status: 'Normal', lastUpdated: new Date(2026, 2, 4, 10, 0) },
+            { id: 'BIN-005', location: 'Cafeteria - South Wing', fillLevel: 88, status: 'Warning', lastUpdated: new Date(2026, 2, 4, 11, 30) },
+            { id: 'BIN-006', location: 'Student Center', fillLevel: 95, status: 'Full', lastUpdated: new Date(2026, 2, 4, 8, 20) },
+            { id: 'BIN-007', location: 'Science Lab - Block A', fillLevel: 34, status: 'Normal', lastUpdated: new Date(2026, 2, 4, 10, 45) },
+            { id: 'BIN-008', location: 'Science Lab - Block B', fillLevel: 56, status: 'Normal', lastUpdated: new Date(2026, 2, 4, 11, 0) },
+            { id: 'BIN-009', location: 'Sports Complex', fillLevel: 72, status: 'Warning', lastUpdated: new Date(2026, 2, 4, 9, 30) },
+            { id: 'BIN-010', location: 'Administration Block', fillLevel: 91, status: 'Full', lastUpdated: new Date(2026, 2, 4, 10, 15) },
+            { id: 'BIN-011', location: 'Parking Lot A', fillLevel: 23, status: 'Normal', lastUpdated: new Date(2026, 2, 4, 11, 45) },
+            { id: 'BIN-012', location: 'Parking Lot B', fillLevel: 58, status: 'Normal', lastUpdated: new Date(2026, 2, 4, 10, 20) }
+        ];
+
+        const collectionHistory = [
+            { id: 'COL-001', date: new Date(2026, 2, 4, 8, 0), binId: 'BIN-003', location: 'Library - Main Hall', actionTaken: 'Emptied' },
+            { id: 'COL-002', date: new Date(2026, 2, 4, 7, 30), binId: 'BIN-006', location: 'Student Center', actionTaken: 'Emptied' },
+            { id: 'COL-003', date: new Date(2026, 2, 3, 16, 45), binId: 'BIN-010', location: 'Administration Block', actionTaken: 'Emptied' },
+            { id: 'COL-004', date: new Date(2026, 2, 3, 15, 20), binId: 'BIN-002', location: 'Engineering Building - Floor 2', actionTaken: 'Emptied' },
+            { id: 'COL-005', date: new Date(2026, 2, 3, 14, 10), binId: 'BIN-005', location: 'Cafeteria - South Wing', actionTaken: 'Emptied' },
+            { id: 'COL-006', date: new Date(2026, 2, 3, 13, 0), binId: 'BIN-009', location: 'Sports Complex', actionTaken: 'Emptied' },
+            { id: 'COL-007', date: new Date(2026, 2, 2, 16, 30), binId: 'BIN-001', location: 'Engineering Building - Floor 1', actionTaken: 'Emptied' },
+            { id: 'COL-008', date: new Date(2026, 2, 2, 15, 0), binId: 'BIN-004', location: 'Cafeteria - North Wing', actionTaken: 'Emptied' },
+            { id: 'COL-009', date: new Date(2026, 2, 2, 14, 15), binId: 'BIN-007', location: 'Science Lab - Block A', actionTaken: 'Emptied' },
+            { id: 'COL-010', date: new Date(2026, 2, 2, 13, 45), binId: 'BIN-008', location: 'Science Lab - Block B', actionTaken: 'Emptied' },
+            { id: 'COL-011', date: new Date(2026, 2, 1, 16, 0), binId: 'BIN-011', location: 'Parking Lot A', actionTaken: 'Emptied' },
+            { id: 'COL-012', date: new Date(2026, 2, 1, 15, 30), binId: 'BIN-012', location: 'Parking Lot B', actionTaken: 'Emptied' }
+        ];
+
+        // Sidebar Toggle
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const toggleBtn = document.getElementById('toggleSidebar');
+        const toggleIcon = document.getElementById('toggleIcon');
+        const sidebarHeader = document.getElementById('sidebarHeader');
+        const navLabels = document.querySelectorAll('.nav-label');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                toggleIcon.className = 'fas fa-chevron-right text-gray-600';
+                sidebarHeader.style.display = 'none';
+                navLabels.forEach(label => label.style.display = 'none');
+            } else {
+                toggleIcon.className = 'fas fa-chevron-left text-gray-600';
+                sidebarHeader.style.display = 'flex';
+                navLabels.forEach(label => label.style.display = 'inline');
+            }
+        });
+
+        // Navigation
+        const navItems = document.querySelectorAll('.nav-item');
+        const pages = document.querySelectorAll('.page');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const pageName = item.getAttribute('data-page');
+                
+                // Update active nav item
+                navItems.forEach(nav => {
+                    nav.classList.remove('bg-emerald-50', 'text-emerald-700');
+                    nav.classList.add('text-gray-600');
+                });
+                item.classList.add('bg-emerald-50', 'text-emerald-700');
+                item.classList.remove('text-gray-600');
+                
+                // Show active page
+                pages.forEach(page => page.classList.remove('active'));
+                document.getElementById(pageName).classList.add('active');
+
+                // Initialize charts if on reports page
+                if (pageName === 'reports') {
+                    initCharts();
+                }
+            });
+        });
+
+        // Format Date
+        function formatDate(date) {
+            const options = { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true };
+            return date.toLocaleString('en-US', options);
+        }
+
+        function formatDateOnly(date) {
+            const options = { month: 'short', day: 'numeric', year: 'numeric' };
+            return date.toLocaleString('en-US', options);
+        }
+
+        function formatTimeOnly(date) {
+            const options = { hour: 'numeric', minute: '2-digit', hour12: true };
+            return date.toLocaleString('en-US', options);
+        }
+
+        // Initialize Dashboard
+        function initDashboard() {
+            // Fill Level Overview
+            const fillLevelOverview = document.getElementById('fillLevelOverview');
+            bins.slice(0, 6).forEach(bin => {
+                const color = bin.fillLevel >= 90 ? 'bg-red-500' : bin.fillLevel >= 70 ? 'bg-yellow-500' : 'bg-emerald-500';
+                fillLevelOverview.innerHTML += `
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="font-medium text-gray-700">${bin.id}</span>
+                            <span class="text-gray-600">${bin.fillLevel}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                            <div class="progress-bar h-full ${color}" style="width: ${bin.fillLevel}%"></div>
+                        </div>
+                        <p class="text-xs text-gray-500">${bin.location}</p>
+                    </div>
+                `;
+            });
+
+            // Recent Alerts
+            const recentAlerts = document.getElementById('recentAlerts');
+            const fullBins = bins.filter(bin => bin.fillLevel >= 90);
+            const warningBins = bins.filter(bin => bin.fillLevel >= 70 && bin.fillLevel < 90).slice(0, 3);
+            
+            fullBins.forEach(bin => {
+                recentAlerts.innerHTML += `
+                    <div class="flex items-start gap-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <div class="p-2 bg-red-100 rounded-lg flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-red-600"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-semibold text-gray-900 mb-1">${bin.id} - Full (${bin.fillLevel}%)</h3>
+                            <p class="text-sm text-gray-600 mb-2">${bin.location}</p>
+                            <p class="text-xs text-gray-500">Last updated: ${formatDate(bin.lastUpdated)}</p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            warningBins.forEach(bin => {
+                recentAlerts.innerHTML += `
+                    <div class="flex items-start gap-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div class="p-2 bg-yellow-100 rounded-lg flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-semibold text-gray-900 mb-1">${bin.id} - Warning (${bin.fillLevel}%)</h3>
+                            <p class="text-sm text-gray-600 mb-2">${bin.location}</p>
+                            <p class="text-xs text-gray-500">Last updated: ${formatDate(bin.lastUpdated)}</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Initialize Bin Status Table
+        function renderBinTable(filteredBins = bins) {
+            const tbody = document.getElementById('binTableBody');
+            tbody.innerHTML = '';
+
+            filteredBins.forEach(bin => {
+                const statusColor = bin.status === 'Full' ? 'text-red-700 bg-red-50 border-red-200' : 
+                                   bin.status === 'Warning' ? 'text-yellow-700 bg-yellow-50 border-yellow-200' : 
+                                   'text-emerald-700 bg-emerald-50 border-emerald-200';
+                const fillColor = bin.fillLevel >= 90 ? 'bg-red-500' : bin.fillLevel >= 70 ? 'bg-yellow-500' : 'bg-emerald-500';
+                const fillTextColor = bin.fillLevel >= 90 ? 'text-red-600' : bin.fillLevel >= 70 ? 'text-yellow-600' : 'text-emerald-600';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4"><span class="font-medium text-gray-900">${bin.id}</span></td>
+                        <td class="px-6 py-4 text-gray-600">${bin.location}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="flex-1 max-w-xs">
+                                    <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                                        <div class="progress-bar h-full ${fillColor}" style="width: ${bin.fillLevel}%"></div>
+                                    </div>
+                                </div>
+                                <span class="font-semibold ${fillTextColor}">${bin.fillLevel}%</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex px-3 py-1 rounded-full text-xs font-medium border ${statusColor}">${bin.status}</span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-600 text-sm">${formatDate(bin.lastUpdated)}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('binCount').textContent = `Showing ${filteredBins.length} of ${bins.length} bins`;
+        }
+
+        // Bin Status Filters
+        document.getElementById('binSearch').addEventListener('input', filterBins);
+        document.getElementById('statusFilter').addEventListener('change', filterBins);
+
+        function filterBins() {
+            const searchTerm = document.getElementById('binSearch').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            const filtered = bins.filter(bin => {
+                const matchesSearch = bin.id.toLowerCase().includes(searchTerm) || 
+                                     bin.location.toLowerCase().includes(searchTerm);
+                const matchesStatus = statusFilter === 'all' || bin.status === statusFilter;
+                return matchesSearch && matchesStatus;
+            });
+
+            renderBinTable(filtered);
+        }
+
+        // Initialize Collection History Table
+        function renderHistoryTable(filteredHistory = collectionHistory) {
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+
+            filteredHistory.forEach(record => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 text-gray-900">${formatDateOnly(record.date)}</td>
+                        <td class="px-6 py-4 text-gray-600">${formatTimeOnly(record.date)}</td>
+                        <td class="px-6 py-4"><span class="font-medium text-gray-900">${record.binId}</span></td>
+                        <td class="px-6 py-4 text-gray-600">${record.location}</td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">${record.actionTaken}</span>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('historyCount').textContent = `Showing ${filteredHistory.length} of ${collectionHistory.length} records`;
+        }
+
+        // Collection History Filters
+        document.getElementById('historySearch').addEventListener('input', filterHistory);
+        document.getElementById('startDate').addEventListener('change', filterHistory);
+        document.getElementById('endDate').addEventListener('change', filterHistory);
+        document.getElementById('clearDates').addEventListener('click', () => {
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            filterHistory();
+        });
+
+        function filterHistory() {
+            const searchTerm = document.getElementById('historySearch').value.toLowerCase();
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            // Show/hide clear button
+            const clearBtn = document.getElementById('clearDates');
+            if (startDate || endDate) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+
+            const filtered = collectionHistory.filter(record => {
+                const matchesSearch = record.binId.toLowerCase().includes(searchTerm) || 
+                                     record.location.toLowerCase().includes(searchTerm) ||
+                                     record.actionTaken.toLowerCase().includes(searchTerm);
+                
+                let matchesDate = true;
+                if (startDate && endDate) {
+                    const recordDate = record.date;
+                    const start = new Date(startDate);
+                    const end = new Date(endDate);
+                    matchesDate = recordDate >= start && recordDate <= end;
+                }
+
+                return matchesSearch && matchesDate;
+            });
+
+            renderHistoryTable(filtered);
+        }
+
+        // Export CSV Functions
+        function exportCSV() {
+            const csv = [
+                ['Date', 'Time', 'Bin ID', 'Location', 'Action Taken'],
+                ...collectionHistory.map(record => [
+                    formatDateOnly(record.date),
+                    formatTimeOnly(record.date),
+                    record.binId,
+                    record.location,
+                    record.actionTaken
+                ])
+            ].map(row => row.join(',')).join('\n');
+
+            downloadCSV(csv, 'collection-history.csv');
+        }
+
+        function exportReportCSV() {
+            const csv = [
+                ['Bin ID', 'Location', 'Total Collections'],
+                ['BIN-003', 'Library - Main Hall', '15'],
+                ['BIN-006', 'Student Center', '14'],
+                ['BIN-005', 'Cafeteria - South Wing', '12'],
+                ['BIN-004', 'Cafeteria - North Wing', '11'],
+                ['BIN-010', 'Administration Block', '10']
+            ].map(row => row.join(',')).join('\n');
+
+            downloadCSV(csv, 'waste-report.csv');
+        }
+
+        function downloadCSV(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Initialize Charts
+        let fillTrendChart = null;
+        let frequencyChart = null;
+
+        function initCharts() {
+            // Destroy existing charts if they exist
+            if (fillTrendChart) fillTrendChart.destroy();
+            if (frequencyChart) frequencyChart.destroy();
+
+            // Fill Trend Chart
+            const fillCtx = document.getElementById('fillTrendChart').getContext('2d');
+            fillTrendChart = new Chart(fillCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Feb 28', 'Mar 1', 'Mar 2', 'Mar 3', 'Mar 4'],
+                    datasets: [
+                        {
+                            label: 'Average Fill Level (%)',
+                            data: [45, 52, 48, 63, 67],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#10b981'
+                        },
+                        {
+                            label: 'Maximum Fill Level (%)',
+                            data: [78, 85, 82, 94, 95],
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#ef4444'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Frequency Chart
+            const freqCtx = document.getElementById('frequencyChart').getContext('2d');
+            frequencyChart = new Chart(freqCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['BIN-003', 'BIN-006', 'BIN-005', 'BIN-004', 'BIN-010'],
+                    datasets: [{
+                        label: 'Total Collections',
+                        data: [15, 14, 12, 11, 10],
+                        backgroundColor: '#8b5cf6',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Toggle Switch
+        function toggleSwitch(element) {
+            element.classList.toggle('active');
+        }
+
+        // Save Settings
+        function saveSettings() {
+            alert('Settings saved successfully!');
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            initDashboard();
+            renderBinTable();
+            renderHistoryTable();
+        });
+    </script>
+</body>
+</html>
