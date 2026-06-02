@@ -1,0 +1,61 @@
+/* --- Collapsed State Fixes --- */
+
+/* Adjust width to perfectly fit the centered square icons */
+#sidebar.collapsed {
+    width: 5.5rem !important; 
+}
+
+/* Hide labels cleanly */
+#sidebar.collapsed .nav-label {
+    opacity: 0 !important;
+    width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    visibility: hidden !important;
+    display: none !important;
+}
+
+/* Center the top logo */
+#sidebar.collapsed .logo-container {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    justify-content: center !important;
+}
+
+/* Adjust the main nav and profile wrapper padding so things fit perfectly */
+#sidebar.collapsed nav,
+#sidebar.collapsed .profile-wrapper {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+}
+
+/* Force nav items and profile box into perfectly proportioned squares */
+#sidebar.collapsed .nav-item,
+#sidebar.collapsed .profile-box {
+    padding: 0 !important;
+    width: 3.5rem !important;
+    height: 3.5rem !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin: 0 auto !important;
+    border-radius: 1rem !important;
+}
+
+/* Fix the active indicator: hug the left edge of the square, don't float away */
+#sidebar.collapsed .nav-item .indicator {
+    left: 0 !important; 
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    width: 4px !important;
+}
+
+/* Ensure the font-awesome icons are dead-center */
+#sidebar.collapsed .nav-item i {
+    margin: 0 !important;
+}
+
+/* Flip the toggle arrow smoothly */
+#sidebar.collapsed #toggleIcon {
+    transform: rotate(180deg) !important;
+}
