@@ -1,9 +1,9 @@
 <?php
-$host = getenv('MYSQLHOST') ?: 'localhost';
-$port = getenv('MYSQLPORT') ?: '3306';
-$db   = getenv('MYSQLDATABASE') ?: 'ecosync';
+$host = getenv('MYSQLHOST') ?: 'acela.proxy.rlwy.net';
+$port = getenv('MYSQLPORT') ?: '55553';
+$db   = getenv('MYSQLDATABASE') ?: 'railway';
 $user = getenv('MYSQLUSER') ?: 'root';
-$pass = getenv('MYSQLPASSWORD') ?: '';
+$pass = getenv('MYSQLPASSWORD') ?: 'nZtDOmqKSaGsBQJNEdfpAFQdWjDRAzHv';
 
 try {
     $pdo = new PDO("mysql:host=$host;port=$port;dbname=$db;charset=utf8", $user, $pass);
