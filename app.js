@@ -1,5 +1,6 @@
 // Change this to your Railway Node.js public URL once deployed!
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL =
+  "https://waste-management-system-production-0055.up.railway.app"; // Update with your actual Railway URL
 
 let bins = [];
 let notifiedBins = {};
