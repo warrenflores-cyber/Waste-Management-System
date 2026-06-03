@@ -9,8 +9,16 @@ app.use(cors());
 // Allow the server to read JSON from the ESP32
 app.use(express.json());
 
-// Start with an empty array. Data will be populated by the hardware sensors.
-let bins = [];
+// Start with a default test bin to verify the website is connecting to Railway.
+let bins = [
+  {
+    id: "BIN-TEST",
+    location: "Railway Server Connection Test",
+    fillLevel: 50,
+    status: "Normal",
+    lastUpdated: new Date().toISOString(),
+  }
+];
 
 // Endpoint for the ESP32 to send data to
 app.post("/api/update-bin", (req, res) => {
