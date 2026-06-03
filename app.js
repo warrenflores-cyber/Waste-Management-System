@@ -318,6 +318,7 @@ async function recordCollection(bin) {
 
 function formatDate(date) {
   const options = {
+    timeZone: "Asia/Manila",
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -329,12 +330,12 @@ function formatDate(date) {
 }
 
 function formatDateOnly(date) {
-  const options = { month: "short", day: "numeric", year: "numeric" };
+  const options = { timeZone: "Asia/Manila", month: "short", day: "numeric", year: "numeric" };
   return date.toLocaleString("en-US", options);
 }
 
 function formatTimeOnly(date) {
-  const options = { hour: "numeric", minute: "2-digit", hour12: true };
+  const options = { timeZone: "Asia/Manila", hour: "numeric", minute: "2-digit", hour12: true };
   return date.toLocaleString("en-US", options);
 }
 
