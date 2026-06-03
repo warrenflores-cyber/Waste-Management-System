@@ -32,7 +32,7 @@ async function fetchLiveData() {
     // Add a timestamp to the URL to completely prevent browser caching
     const timestamp = new Date().getTime();
     const response = await fetch(
-      `${API_BASE_URL}/api/bins?t=${timestamp}`,
+      `${API_BASE_URL}/api/bins.php?t=${timestamp}`,
       { cache: "no-store" },
     );
     const data = await response.json();
@@ -867,7 +867,7 @@ window.saveBinLocation = async function(id, currentLocation) {
   
   if (newLocation !== "" && newLocation !== currentLocation) {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/edit-bin`, {
+      const response = await fetch(`${API_BASE_URL}/api/edit-bin.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, location: newLocation })
