@@ -20,6 +20,18 @@ try {
         actionTaken VARCHAR(100)
     )");
 
+    // Create bins table
+    $pdo->exec("CREATE TABLE IF NOT EXISTS bins (
+        id VARCHAR(50) PRIMARY KEY,
+        location VARCHAR(255),
+        fillLevel INT DEFAULT 0,
+        status VARCHAR(50) DEFAULT 'Normal',
+        lastUpdated DATETIME
+    )");
+
+    // Add a default test bin
+    $pdo->exec("INSERT IGNORE INTO bins (id, location, fillLevel, status, lastUpdated) VALUES ('BIN-TEST', 'Railway Server Connection Test', 50, 'Normal', NOW())");
+
     // Add default admin user (kung wala pa)
     $pdo->exec("INSERT IGNORE INTO users (name, email, password, role) VALUES ('Admin', 'admin@ecosync.com', 'admin123', 'Admin')");
 
