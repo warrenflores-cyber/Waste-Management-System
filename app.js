@@ -195,7 +195,7 @@ try {
   if (cachedHistory && Array.isArray(cachedHistory)) {
     collectionHistory = cachedHistory.map(record => ({
       ...record,
-      date: new Date(record.date)
+      date: new Date(record.date.includes('T') ? record.date : record.date.replace(' ', 'T') + 'Z')
     }));
   }
 } catch (e) {}
@@ -207,7 +207,7 @@ async function fetchCollectionHistory() {
     if (result.success) {
       collectionHistory = result.data.map(record => ({
         id: record.id,
-        date: new Date(record.date),
+        date: new Date(record.date.includes('T') ? record.date : record.date.replace(' ', 'T') + 'Z'),
         binId: record.binId,
         location: record.location,
         actionTaken: record.actionTaken
@@ -294,7 +294,7 @@ async function recordCollection(bin) {
     if (result.success) {
       const newRecord = {
         id: result.id,
-        date: new Date(result.date),
+        date: new Date(result.date.includes('T') ? result.date : result.date.replace(' ', 'T') + 'Z'),
         binId: bin.id,
         location: bin.location,
         actionTaken: "Emptied"
